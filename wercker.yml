@@ -138,3 +138,9 @@ deploy:
         bucket-url: $DOWNLOADS_BUCKET_URL/versions/$WERCKER_VERSION/
         key-id: $AWS_ACCESS_KEY_ID
         key-secret: $AWS_SECRET_ACCESS_KEY
+
+test:
+    steps:
+        - script:
+            code: |
+                docker run hello-world

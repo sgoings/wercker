@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/fsouza/go-dockerclient"
@@ -97,7 +98,10 @@ func NewDockerBox(boxConfig *core.BoxConfig, options *core.PipelineOptions, dock
 	if err != nil {
 		return nil, err
 	}
-
+	faiqGopath, e := filepath.Abs("/Users/faiq")
+	if e != nil {
+		panic(e)
+	}
 	return &DockerBox{
 		Name:            name,
 		ShortName:       shortName,
@@ -111,7 +115,7 @@ func NewDockerBox(boxConfig *core.BoxConfig, options *core.PipelineOptions, dock
 		logger:          logger,
 		cmd:             cmd,
 		entrypoint:      entrypoint,
-		volumes:         []string{"/var/run/docker.sock", "/usr/local/bin/docker"},
+		volumes:         []string{"/var/run/docker.sock", faiqGopath},
 	}, nil
 }
 
@@ -165,13 +169,13 @@ func (b *DockerBox) binds() ([]string, error) {
 			if b.options.DirectMount {
 				binds = append(binds, fmt.Sprintf("%s:%s:rw", b.options.HostPath(entry.Name()), b.options.GuestPath(entry.Name())))
 			} else {
-				binds = append(binds, fmt.Sprintf("%s:%s", b.options.HostPath(entry.Name()), b.options.MntPath(entry.Name())))
+				binds = append(binds, fmt.Sprintf("%s:%s:ro", b.options.HostPath(entry.Name()), b.options.MntPath(entry.Name())))
 			}
 			// volumes[b.options.MntPath(entry.Name())] = struct{}{}
 		}
 	}
 	for _, volume := range b.volumes {
-		binds = append(binds, fmt.Sprintf("%s:%s", volume, volume))
+		binds = append(binds, fmt.Sprintf("%s:%s:rw", volume, volume))
 	}
 	return binds, nil
 }
